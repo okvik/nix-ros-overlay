@@ -169,4 +169,18 @@ rosSelf: rosSuper: with rosSelf.lib; {
     sha256 = "1g45f71mk4gyca550177qf70v5cvavlsalmg7x8bi59j6z6f0mgz";
   };
 
+  rviz-ogre-vendor = rosSuper.rviz-ogre-vendor.overrideAttrs ({ ... }: {
+    # Prevent replacing $out/opt/.. with $out/var/empty/..
+    dontFixCmake = true;
+  });
+
+  rviz2 = rosSuper.rviz2.overrideAttrs ({
+    nativeBuildInputs ? [], postFixup ? "", ...
+  }: {
+    dontWrapQtApps = false;
+    nativeBuildInputs = nativeBuildInputs ++ [ self.qt5.wrapQtAppsHook ];
+    postFixup = postFixup + ''
+      wrapQtApp "$out/lib/rviz2/rviz2"
+    '';
+  });
 }

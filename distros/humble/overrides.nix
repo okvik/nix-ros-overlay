@@ -102,4 +102,49 @@ rosSelf: rosSuper: with rosSelf.lib; {
       })
     ];
   });
+
+  ompl = rosSuper.ompl.overrideAttrs ({
+    postPatch ? "", ...
+  }: {
+    postPatch = postPatch + ''
+      substituteInPlace CMakeModules/ompl.pc.in \
+        --replace '$'{prefix}/@CMAKE_INSTALL_ @CMAKE_INSTALL_
+    '';
+  });
+
+  moveit-core = rosSuper.moveit-core.overrideAttrs ({
+    propagatedBuildInputs ? [], ...
+  }: let
+    tf2-kdl = rosSelf.tf2-kdl;
+  in {
+    propagatedBuildInputs = propagatedBuildInputs ++ [
+      tf2-kdl
+    ];
+  });
+
+  moveit-kinematics = rosSuper.moveit-kinematics.overrideAttrs ({
+    propagatedBuildInputs ? [], ...
+  }: let
+    tf2 = rosSelf.tf2;
+    tf2-kdl = rosSelf.tf2-kdl;
+    urdfdom = rosSelf.urdfdom;
+    moveit-ros-planning = rosSelf.moveit-ros-planning;
+  in {
+    propagatedBuildInputs = propagatedBuildInputs ++ [
+      tf2
+      tf2-kdl
+      urdfdom
+      moveit-ros-planning
+    ];
+  });
+
+  rclc = rosSuper.rclc.overrideAttrs ({
+    buildInputs ? [], ...
+  }: let
+    std-msgs = rosSelf.std-msgs;
+  in {
+    buildInputs = buildInputs ++ [
+      std-msgs
+    ];
+  });
 }
